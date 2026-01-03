@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bhajan Library</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+
+  <meta name="theme-color" content="#111111" />
+</head>
+
+<body>
+  <header>
+    <h1>Bhajan Library</h1>
+    <p class="sub">Tap a bhajan to open the PDF</p>
+    <input id="search" type="search" placeholder="Search bhajans..." />
+  </header>
+
+  <main>
+    <ul id="list" class="list"></ul>
+  </main>
+
+  <footer>
+    <p>Made for everyone • Works on mobile</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
+  </script>
+</body>
+</html>
