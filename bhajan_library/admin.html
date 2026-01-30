@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Bhajan Library</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .admin-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #1a1a1a;
+      min-height: 100vh;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #333;
+    }
+    .admin-header h1 {
+      color: #fff;
+      margin: 0;
+    }
+    .back-link {
+      color: #4a9eff;
+      text-decoration: none;
+      padding: 8px 16px;
+      background: #2a2a2a;
+      border-radius: 4px;
+    }
+    .back-link:hover {
+      background: #3a3a3a;
+    }
+    .section {
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .section h2 {
+      color: #fff;
+      margin-top: 0;
+      font-size: 18px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      color: #aaa;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    input[type="text"],
+    input[type="file"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    textarea {
+      min-height: 100px;
+      font-family: monospace;
+      resize: vertical;
+    }
+    .btn {
+      background: #4a9eff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    .btn:hover {
+      background: #3a8eef;
+    }
+    .btn-danger {
+      background: #e74c3c;
+    }
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+    .btn-success {
+      background: #27ae60;
+    }
+    .btn-success:hover {
+      background: #229954;
+    }
+    .pdf-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .pdf-item {
+      background: #1a1a1a;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border-left: 3px solid #4a9eff;
+    }
+    .pdf-item h3 {
+      color: #fff;
+      margin: 0 0 10px 0;
+      font-size: 16px;
+    }
+    .pdf-item p {
+      color: #aaa;
+      margin: 5px 0;
+      font-size: 13px;
+    }
+    .section-item {
+      background: #2a2a2a;
+      padding: 8px 12px;
+      margin: 5px 0;
+      border-radius: 3px;
+      color: #ddd;
+      font-size: 13px;
+    }
+    .message {
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      display: none;
+    }
+    .message.success {
+      background: #27ae60;
+      color: #fff;
+    }
+    .message.error {
+      background: #e74c3c;
+      color: #fff;
+    }
+    .message.show {
+      display: block;
+    }
+    .config-editor {
+      margin-top: 20px;
+    }
+    .help-text {
+      color: #888;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1>📚 Admin Panel</h1>
+      <a href="index.html" class="back-link">← Back to Library</a>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <!-- Upload New PDF -->
+    <div class="section">
+      <h2>📤 Upload New PDF</h2>
+      <form id="upload-form">
+        <div class="form-group">
+          <label>PDF/Image File *</label>
+          <input type="file" id="file-input" accept=".pdf,image/*" required />
+          <p class="help-text">Select a PDF or image file to upload</p>
+        </div>
+        
+        <div class="form-group">
+          <label>Collection Name *</label>
+          <input type="text" id="pdf-name" placeholder="e.g., Bhajan Collection Vol 2" required />
+        </div>
+
+        <div class="form-group">
+          <label>Sections (JSON format) *</label>
+          <textarea id="sections-input" placeholder='[
+  {"title": "Ganesh Bhajans", "pages": "1-10"},
+  {"title": "Shiva Bhajans", "pages": "11-20"}
+]' required></textarea>
+          <p class="help-text">Define page ranges for each section in JSON format</p>
+        </div>
+
+        <button type="submit" class="btn btn-success">Upload & Add to Config</button>
+      </form>
+    </div>
+
+    <!-- Current PDFs -->
+    <div class="section">
+      <h2>📑 Current PDF Collections</h2>
+      <ul id="pdf-list" class="pdf-list">
+        <li style="color: #888;">Loading...</li>
+      </ul>
+    </div>
+
+    <!-- Manual Config Editor -->
+    <div class="section config-editor">
+      <h2>⚙️ Manual Configuration Editor</h2>
+      <p class="help-text" style="margin-bottom: 10px;">Advanced: Edit config.json directly</p>
+      <textarea id="config-editor" style="min-height: 300px;"></textarea>
+      <br><br>
+      <button id="save-config-btn" class="btn btn-success">Save Configuration</button>
+      <button id="reload-config-btn" class="btn">Reload from File</button>
+    </div>
+  </div>
+
+  <script>
+    let currentConfig = { pdfs: [] };
+
+    // Load and display current configuration
+    async function loadConfig() {
+      try {
+        const response = await fetch('config.json');
+        currentConfig = await response.json();
+        displayPDFs();
+        document.getElementById('config-editor').value = JSON.stringify(currentConfig, null, 2);
+      } catch (error) {
+        showMessage('Error loading config: ' + error.message, 'error');
+      }
+    }
+
+    function displayPDFs() {
+      const listEl = document.getElementById('pdf-list');
+      if (currentConfig.pdfs.length === 0) {
+        listEl.innerHTML = '<li style="color: #888;">No PDFs configured yet</li>';
+        return;
+      }
+
+      listEl.innerHTML = '';
+      currentConfig.pdfs.forEach((pdf, index) => {
+        const li = document.createElement('li');
+        li.className = 'pdf-item';
+        li.innerHTML = `
+          <h3>${pdf.name}</h3>
+          <p><strong>File:</strong> ${pdf.file}</p>
+          <p><strong>Sections:</strong></p>
+          ${pdf.sections.map(s => `<div class="section-item">${s.title} (Pages ${s.pages})</div>`).join('')}
+        `;
+        listEl.appendChild(li);
+      });
+    }
+
+    function showMessage(text, type = 'success') {
+      const msgEl = document.getElementById('message');
+      msgEl.textContent = text;
+      msgEl.className = `message ${type} show`;
+      setTimeout(() => {
+        msgEl.classList.remove('show');
+      }, 5000);
+    }
+
+    // Handle file upload
+    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('file-input');
+      const pdfName = document.getElementById('pdf-name').value;
+      const sectionsText = document.getElementById('sections-input').value;
+
+      // Validate sections JSON
+      let sections;
+      try {
+        sections = JSON.parse(sectionsText);
+        if (!Array.isArray(sections)) {
+          throw new Error('Sections must be an array');
+        }
+      } catch (error) {
+        showMessage('Invalid sections JSON: ' + error.message, 'error');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      if (!file) {
+        showMessage('Please select a file', 'error');
+        return;
+      }
+
+      // In a real implementation, you would upload this to a server
+      // For now, we'll show instructions for manual upload
+      showMessage(
+        `⚠️ Manual Steps Required:\n\n` +
+        `1. Upload "${file.name}" to the pdfs/ folder\n` +
+        `2. Click "Add to Config" below to update configuration\n\n` +
+        `For automatic upload, this app needs a backend server.`,
+        'error'
+      );
+
+      // Add to config
+      const newPDF = {
+        name: pdfName,
+        file: file.name,
+        sections: sections
+      };
+
+      currentConfig.pdfs.push(newPDF);
+      document.getElementById('config-editor').value = JSON.stringify(currentConfig, null, 2);
+      displayPDFs();
+
+      // Show download button for config
+      const downloadBtn = document.createElement('button');
+      downloadBtn.className = 'btn btn-success';
+      downloadBtn.textContent = '💾 Download Updated config.json';
+      downloadBtn.onclick = () => downloadConfig();
+      
+      const msgEl = document.getElementById('message');
+      msgEl.innerHTML = '';
+      msgEl.appendChild(document.createTextNode('Configuration updated! '));
+      msgEl.appendChild(downloadBtn);
+      msgEl.className = 'message success show';
+    });
+
+    // Save config manually
+    document.getElementById('save-config-btn').addEventListener('click', () => {
+      try {
+        const configText = document.getElementById('config-editor').value;
+        const newConfig = JSON.parse(configText);
+        currentConfig = newConfig;
+        displayPDFs();
+        downloadConfig();
+        showMessage('Configuration validated! Download the file and replace config.json', 'success');
+      } catch (error) {
+        showMessage('Invalid JSON: ' + error.message, 'error');
+      }
+    });
+
+    // Reload config
+    document.getElementById('reload-config-btn').addEventListener('click', () => {
+      loadConfig();
+      showMessage('Configuration reloaded', 'success');
+    });
+
+    // Download config.json
+    function downloadConfig() {
+      const blob = new Blob([JSON.stringify(currentConfig, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'config.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Load config on page load
+    loadConfig();
+  </script>
+</body>
+</html>

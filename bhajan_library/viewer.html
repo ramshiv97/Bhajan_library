@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bhajan Viewer</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    #viewer-container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+    }
+    #viewer-header {
+      background: #111;
+      padding: 12px 16px;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+    }
+    #back-btn {
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #back-btn:hover {
+      background: #555;
+    }
+    #pdf-info {
+      font-size: 14px;
+      color: #aaa;
+    }
+    #pdf-canvas-container {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      gap: 20px;
+    }
+    .pdf-page {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      max-width: 100%;
+      height: auto;
+    }
+    #loading {
+      color: #fff;
+      font-size: 18px;
+      text-align: center;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewer-container">
+    <div id="viewer-header">
+      <button id="back-btn" onclick="window.location.href='index.html'">← Back</button>
+      <div id="pdf-info"></div>
+    </div>
+    <div id="pdf-canvas-container">
+      <div id="loading">Loading...</div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    // Set worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // Get parameters from URL
+    const params = new URLSearchParams(window.location.search);
+    const pdfFile = params.get('file');
+    const pagesParam = params.get('pages');
+    const title = params.get('title');
+
+    if (!pdfFile || !pagesParam) {
+      document.getElementById('loading').textContent = 'Error: Missing parameters';
+    } else {
+      loadPDF(pdfFile, pagesParam, title);
+    }
+
+    async function loadPDF(file, pagesParam, title) {
+      try {
+        const container = document.getElementById('pdf-canvas-container');
+        const loading = document.getElementById('loading');
+        const infoEl = document.getElementById('pdf-info');
+        
+        infoEl.textContent = title || 'Bhajan';
+
+        // Parse page range
+        let startPage, endPage;
+        if (pagesParam.includes('-end')) {
+          startPage = parseInt(pagesParam.split('-')[0]);
+          endPage = null; // Will be determined after loading PDF
+        } else {
+          const parts = pagesParam.split('-');
+          startPage = parseInt(parts[0]);
+          endPage = parseInt(parts[1]);
+        }
+
+        // Load PDF
+        const pdf = await pdfjsLib.getDocument(`pdfs/${file}`).promise;
+        
+        // Set end page if "end" was specified
+        if (endPage === null) {
+          endPage = pdf.numPages;
+        }
+
+        loading.textContent = `Loading pages ${startPage}-${endPage}...`;
+
+        // Render each page in the range
+        for (let pageNum = startPage; pageNum <= endPage; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const scale = 1.5;
+          const viewport = page.getViewport({ scale });
+
+          const canvas = document.createElement('canvas');
+          canvas.className = 'pdf-page';
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+          };
+
+          await page.render(renderContext).promise;
+          container.appendChild(canvas);
+        }
+
+        loading.remove();
+        infoEl.textContent = `${title || 'Bhajan'} (Pages ${startPage}-${endPage})`;
+
+      } catch (error) {
+        document.getElementById('loading').textContent = `Error loading PDF: ${error.message}`;
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>

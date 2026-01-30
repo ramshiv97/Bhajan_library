@@ -1,0 +1,21 @@
+{
+  "pdfs": [
+    {
+      "name": "Bhajan Collection",
+      "file": "bhajan-collection.pdf",
+      "sections": [
+        { "title": "Ganesh Bhajans", "pages": "3-14" },
+        { "title": "Guru Bhajans", "pages": "15-19" },
+        { "title": "Saraswati Bhajans", "pages": "20-25" },
+        { "title": "Murugan Bhajans", "pages": "26-31" },
+        { "title": "Devi Bhajans", "pages": "32-40" },
+        { "title": "Shiva Bhajans", "pages": "41-57" },
+        { "title": "Krishna Bhajans", "pages": "58-80" },
+        { "title": "Narayana Bhajans", "pages": "81-87" },
+        { "title": "Rama Bhajans", "pages": "88-98" },
+        { "title": "Hanuman Bhajans", "pages": "99-102" },
+        { "title": "Ayyappa Bhajans", "pages": "103-end" }
+      ]
+    }
+  ]
+}
